@@ -1,6 +1,15 @@
 // Home page — black canvas, headline, envelope + fan-out cards
 const { useState: useStateH, useEffect: useEffectH, useRef: useRefH } = React;
 
+function playEnvelopeSound() {
+  try {
+    const audio = new Audio("uploads/tissue2.mp3");
+    audio.preload = "auto";
+    audio.volume = 0.85;
+    audio.play().catch(() => {});
+  } catch {}
+}
+
 function Home({ onNavigate, user, onLoginClick, onLogout }) {
   const [open, setOpen] = useStateH(false);
   const [hoverIdx, setHoverIdx] = useStateH(null);
@@ -8,6 +17,16 @@ function Home({ onNavigate, user, onLoginClick, onLogout }) {
   const quoteSpace = "clamp(110px, 9vw, 156px)";
   const data = useStudySeedData();
   const stats = StudySeed.getStats(data);
+
+  const toggleEnvelope = () => {
+    playEnvelopeSound();
+    setOpen(o => !o);
+  };
+
+  const openEnvelope = () => {
+    if (!open) playEnvelopeSound();
+    setOpen(true);
+  };
 
   // when opening: remember scroll, gently bring envelope into view
   // when closing: smoothly restore the prior scroll position so the headline is visible again
@@ -31,6 +50,18 @@ function Home({ onNavigate, user, onLoginClick, onLogout }) {
       window.scrollTo({ top: restoreTo, behavior:"smooth" });
     }
   }, [open]);
+
+  useEffectH(() => {
+    const primeEnvelopeAudio = () => {
+      try {
+        const audio = new Audio("uploads/tissue2.mp3");
+        audio.preload = "auto";
+        audio.load();
+      } catch {}
+    };
+    window.addEventListener("pointerdown", primeEnvelopeAudio, { once:true, passive:true });
+    return () => window.removeEventListener("pointerdown", primeEnvelopeAudio);
+  }, []);
 
   return (
     <div style={{minHeight:"100vh", display:"flex", flexDirection:"column", overflow:"hidden"}}>
@@ -82,7 +113,7 @@ function Home({ onNavigate, user, onLoginClick, onLogout }) {
             </p>
 
             <div className="fade-in d4" style={{display:"flex", alignItems:"center", gap:16, marginTop:36, flexWrap:"wrap"}}>
-              <button className="btn btn-primary" onClick={()=>setOpen(o=>!o)}>
+              <button className="btn btn-primary" onClick={toggleEnvelope}>
                 {open ? "收起信封" : "点击信封，开始规划"}
                 <Icon.ArrowRight size={16}/>
               </button>
@@ -149,7 +180,7 @@ function Home({ onNavigate, user, onLoginClick, onLogout }) {
               transition:"padding-top .65s cubic-bezier(.22, 1, .36, 1)"
             }}>
               <div style={{position:"relative", willChange:"transform"}}>
-                <Envelope open={open} onToggle={()=>setOpen(o=>!o)} onSealClick={()=>setOpen(true)}/>
+                <Envelope open={open} onToggle={toggleEnvelope} onSealClick={openEnvelope}/>
 
                 {/* cards — anchored to envelope */}
                 <FunctionCard idx={0} open={open} hoveredIdx={hoverIdx} onHover={setHoverIdx} onClick={i=>onNavigate(["planner","records","timetable"][i])} variant="green"/>

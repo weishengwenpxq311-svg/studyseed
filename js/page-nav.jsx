@@ -9,11 +9,29 @@ const SUB_PAGES = [
   { key:"timetable", no:"03", label:"计划时间表", accent:"var(--yellow)" },
 ];
 
+let pageSwitchAudio = null;
+function playPageSwitchSound() {
+  try {
+    if (!pageSwitchAudio) {
+      pageSwitchAudio = new Audio("uploads/magazine1.mp3");
+      pageSwitchAudio.preload = "auto";
+      pageSwitchAudio.volume = 0.45;
+    }
+    pageSwitchAudio.currentTime = 0;
+    pageSwitchAudio.play().catch(() => {});
+  } catch {}
+}
+
+function navigateWithSound(key, onNavigate) {
+  playPageSwitchSound();
+  onNavigate(key);
+}
+
 function useSwipeNav(idx, onNavigate) {
   useEffectN(() => {
     if (idx < 0) return;
-    const next = () => idx < 2 && onNavigate(SUB_PAGES[idx+1].key);
-    const prev = () => idx > 0 && onNavigate(SUB_PAGES[idx-1].key);
+    const next = () => idx < 2 && navigateWithSound(SUB_PAGES[idx+1].key, onNavigate);
+    const prev = () => idx > 0 && navigateWithSound(SUB_PAGES[idx-1].key, onNavigate);
 
     // touch swipe
     let start = null;
@@ -117,7 +135,7 @@ function PageSwitcher({ idx, onNavigate }) {
       <PSHintLine idx={idx}/>
 
       <button className="ps-btn" disabled={!prev}
-              onClick={() => prev && onNavigate(prev.key)}>
+              onClick={() => prev && navigateWithSound(prev.key, onNavigate)}>
         <Icon.ArrowLeft size={14}/>
         <small>PREV</small>
         <span>{prev ? prev.label : "—"}</span>
@@ -128,13 +146,13 @@ function PageSwitcher({ idx, onNavigate }) {
         <span style={{fontWeight:700, fontSize:14, color:"var(--paper)"}}>{cur.no} · {cur.label}</span>
         <span style={{display:"flex", gap:5}}>
           {SUB_PAGES.map((p,i) => (
-            <button key={i} aria-label={p.label} className={"ps-dot " + (i===idx?"active":"")} onClick={()=>onNavigate(p.key)}/>
+            <button key={i} aria-label={p.label} className={"ps-dot " + (i===idx?"active":"")} onClick={()=>i !== idx && navigateWithSound(p.key, onNavigate)}/>
           ))}
         </span>
       </div>
 
       <button className="ps-btn" disabled={!next}
-              onClick={() => next && onNavigate(next.key)}
+              onClick={() => next && navigateWithSound(next.key, onNavigate)}
               style={{flexDirection:"row-reverse"}}>
         <Icon.ArrowRight size={14}/>
         <small style={{marginRight:0, marginLeft:4}}>NEXT</small>

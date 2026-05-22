@@ -12,11 +12,8 @@ function Envelope({ open, onToggle, onSealClick, compact=false }) {
     <div className="envelope-wrap" style={{
       width:W, height:H, position:"relative",
       perspective:"1800px", perspectiveOrigin:"center 40%",
-      boxShadow: open ? "0 40px 60px -32px rgba(0,0,0,.55)" : "0 24px 40px -26px rgba(0,0,0,.5)",
-      transition:"box-shadow .6s ease",
-      transform:"translateZ(0)",
-      willChange:"transform",
-      contain:"layout paint style"
+      filter: open ? "drop-shadow(0 40px 60px rgba(0,0,0,.55))" : "drop-shadow(0 24px 40px rgba(0,0,0,.5))",
+      transition:"filter .6s ease"
     }}>
 
       {/* string-and-tag hand-cut tag, top-left */}
@@ -66,7 +63,7 @@ function Envelope({ open, onToggle, onSealClick, compact=false }) {
         {/* seal / smiley + caption visible when closed — also acts as a button to trigger the swipe-carousel mode */}
         {!compact && (
           <div style={{
-            position:"absolute", left:"50%", bottom:"22%",
+            position:"absolute", left:"50%", bottom:"22%", transform:"translateX(-50%)",
             display:"flex", flexDirection:"column", alignItems:"center", gap:14,
             opacity: open ? 0 : 1,
             transform: `translateX(-50%) scale(${open ? 0.86 : 1})`,

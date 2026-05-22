@@ -21,13 +21,13 @@ function FunctionCard({ idx, open, hoveredIdx, onHover, onClick, variant }) {
   const isDimmed = hoveredIdx !== null && hoveredIdx !== idx;
 
   const baseTransform = open
-    ? `translate3d(-50%, 0, 0) translate3d(${L.x}px, ${L.y}px, 0) rotateZ(${L.rot}deg) scale(1)`
-    : `translate3d(-50%, 0, 0) translate3d(0px, -40px, 0) rotateZ(0deg) scale(0.6)`;
+    ? `translate(-50%, 0) translate(${L.x}px, ${L.y}px) rotate(${L.rot}deg) scale(1)`
+    : `translate(-50%, 0) translate(0px, -40px) rotate(0deg) scale(0.6)`;
 
   const hoverTransform = isHover
-    ? `translate3d(-50%, 0, 0) translate3d(${L.x}px, ${L.y - 28}px, 0) rotateZ(${L.rot * 0.4}deg) scale(1.04)`
+    ? `translate(-50%, 0) translate(${L.x}px, ${L.y - 28}px) rotate(${L.rot * 0.4}deg) scale(1.04)`
     : isDimmed
-      ? `translate3d(-50%, 0, 0) translate3d(${L.x * 1.05}px, ${L.y + 14}px, 0) rotateZ(${L.rot}deg) scale(.97)`
+      ? `translate(-50%, 0) translate(${L.x * 1.05}px, ${L.y + 14}px) rotate(${L.rot}deg) scale(.97)`
       : baseTransform;
 
   return (
@@ -46,9 +46,6 @@ function FunctionCard({ idx, open, hoveredIdx, onHover, onClick, variant }) {
         opacity: open ? 1 : 0,
         transition:`transform .65s cubic-bezier(.22, 1, .36, 1) ${open ? L.delay : 0}s, opacity .35s ease ${open ? L.delay : 0}s, box-shadow .25s ease`,
         willChange:"transform, opacity",
-        backfaceVisibility:"hidden",
-        transformStyle:"preserve-3d",
-        contain:"layout paint style",
         boxShadow: isHover
           ? "0 50px 80px -28px rgba(0,0,0,.7), 0 10px 18px -8px rgba(0,0,0,.5)"
           : "0 30px 60px -22px rgba(0,0,0,.6), 0 6px 12px -6px rgba(0,0,0,.4)",

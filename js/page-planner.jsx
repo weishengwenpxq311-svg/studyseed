@@ -181,21 +181,6 @@ function PagePlanner({ onBack, onGenerated, user, onRequireLogin }) {
                 ))}
               </div>
             </div>
-
-            <div style={{
-              border:"1px dashed var(--hairline-strong)", borderRadius:20, padding:"20px 22px",
-              display:"flex", gap:14, alignItems:"flex-start"
-            }}>
-              <div style={{width:36,height:36,borderRadius:12,background:"var(--yellow)",color:"#1a1305",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                <Icon.Sprout size={20}/>
-              </div>
-              <div>
-                <div style={{fontWeight:700, fontSize:14}}>部署说明</div>
-                <div style={{fontSize:13, color:"rgba(241,236,224,.55)", marginTop:4, lineHeight:1.6}}>
-                  API Key 不会暴露给用户。部署到 Vercel 后，在 Environment Variables 中配置 DeepSeek 和 YouTube Key 即可。
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

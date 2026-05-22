@@ -1,7 +1,7 @@
 // Home page — black canvas, headline, envelope + fan-out cards
 const { useState: useStateH, useEffect: useEffectH, useRef: useRefH } = React;
 
-function Home({ onNavigate }) {
+function Home({ onNavigate, user, onLoginClick, onLogout }) {
   const [open, setOpen] = useStateH(false);
   const [hoverIdx, setHoverIdx] = useStateH(null);
   const prevScrollRef = useRefH(null);
@@ -34,7 +34,7 @@ function Home({ onNavigate }) {
 
   return (
     <div style={{minHeight:"100vh", display:"flex", flexDirection:"column", overflow:"hidden"}}>
-      <TopBar onNavigate={onNavigate}/>
+      <TopBar onNavigate={onNavigate} user={user} onLoginClick={onLoginClick} onLogout={onLogout}/>
 
       <main style={{flex:1, position:"relative"}}>
         {/* subtle far-back grid texture */}
@@ -323,12 +323,12 @@ function Home({ onNavigate }) {
   );
 }
 
-function TopBar({ onNavigate }) {
+function TopBar({ onNavigate, user, onLoginClick, onLogout }) {
   const navItems = [
     { id:"home", label:"首页", onClick:()=>window.scrollTo({top:0, behavior:"smooth"}) },
     { id:"planner", label:"我的计划", onClick:()=>onNavigate("planner") },
     { id:"records", label:"学习记录", onClick:()=>onNavigate("records") },
-    { id:"login", label:"登录", onClick:()=>{} },
+    { id:"login", label:user ? "退出" : "登录", onClick:()=> user ? onLogout() : onLoginClick() },
   ];
 
   return (

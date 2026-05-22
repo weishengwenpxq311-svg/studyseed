@@ -1,7 +1,7 @@
 // Arrange plan — form + AI generation pipeline.
 const { useState: useStateP } = React;
 
-function PagePlanner({ onBack, onGenerated }) {
+function PagePlanner({ onBack, onGenerated, user, onRequireLogin }) {
   const data = useStudySeedData();
   const activePlan = data.plans.find(p => p.id === data.activePlanId);
 
@@ -37,6 +37,15 @@ function PagePlanner({ onBack, onGenerated }) {
     } catch (err) {
       setGenerating(false);
       setError(err.message || "生成失败，请检查 API Key 或网络。");
+    }
+  };
+
+  const downloadPlan = () => {
+    if (!onRequireLogin()) return;
+    try {
+      StudySeedExport.downloadPlanBundle();
+    } catch (err) {
+      setError(err.message || "下载失败，请先生成计划。");
     }
   };
 
@@ -121,8 +130,11 @@ function PagePlanner({ onBack, onGenerated }) {
                   {generating ? "正在生成计划与课程..." : "生成学习计划"}
                   {!generating && <Icon.ArrowRight size={18}/>}
                 </button>
+                <button onClick={downloadPlan} className="btn btn-ghost" style={{color:"var(--ink)", borderColor:"rgba(5,5,5,.18)", padding:"15px 22px"}}>
+                  下载计划包
+                </button>
                 <span style={{fontFamily:"var(--type-mono)", fontSize:11, color:"rgba(5,5,5,.5)", letterSpacing:".18em"}}>
-                  SERVER PROXY · VERCEL READY
+                  {user ? `SIGNED IN · ${user.name}` : "LOGIN ONLY FOR DOWNLOAD"}
                 </span>
               </div>
             </div>

@@ -7,6 +7,8 @@ const ROUTES = ["planner", "records", "timetable"];
 function App() {
   const [route, setRoute] = useStateA("home");
   const [toast, setToast] = useStateA(null);
+  const [user, setUser] = useStateA(() => StudySeedAuth.getUser());
+  const [loginOpen, setLoginOpen] = useStateA(false);
   const prevIdxRef = useRefA(-1);
 
   const idx = ROUTES.indexOf(route);
@@ -31,6 +33,18 @@ function App() {
     setTimeout(() => setToast(null), 2400);
   };
 
+  const requireLogin = () => {
+    if (user) return true;
+    setLoginOpen(true);
+    return false;
+  };
+
+  const logout = () => {
+    StudySeedAuth.logout();
+    setUser(null);
+    showToast("已退出登录");
+  };
+
   return (
     <>
       <style>{`
@@ -49,13 +63,13 @@ function App() {
         .sub-pad{ padding-bottom: 140px }
       `}</style>
 
-      {route === "home" && <Home onNavigate={setRoute}/>}
+      {route === "home" && <Home onNavigate={setRoute} user={user} onLoginClick={()=>setLoginOpen(true)} onLogout={logout}/>}
 
       {idx >= 0 && (
         <div key={route} className="page-anim sub-pad" data-dir={dir}>
-          {route === "planner"   && <PagePlanner   onBack={()=>setRoute("home")} onGenerated={(plan)=>{ showToast(`计划已生成 · ${plan.title}`); }}/>}
+          {route === "planner"   && <PagePlanner   onBack={()=>setRoute("home")} user={user} onRequireLogin={requireLogin} onGenerated={(plan)=>{ showToast(`计划已生成 · ${plan.title}`); }}/>}
           {route === "records"   && <PageRecords   onBack={()=>setRoute("home")}/>}
-          {route === "timetable" && <PageTimetable onBack={()=>setRoute("home")}/>}
+          {route === "timetable" && <PageTimetable onBack={()=>setRoute("home")} user={user} onRequireLogin={requireLogin}/>}
         </div>
       )}
 
@@ -71,6 +85,17 @@ function App() {
           <span style={{width:8,height:8,borderRadius:"50%",background:"var(--green)"}}/>
           {toast}
         </div>
+      )}
+
+      {loginOpen && (
+        <LoginModal
+          onClose={()=>setLoginOpen(false)}
+          onLogin={(nextUser)=>{
+            setUser(nextUser);
+            setLoginOpen(false);
+            showToast(`已登录 · ${nextUser.name}`);
+          }}
+        />
       )}
     </>
   );

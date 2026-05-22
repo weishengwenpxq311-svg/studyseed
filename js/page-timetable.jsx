@@ -6,7 +6,7 @@ const DAYS_CN = ["周一","周二","周三","周四","周五","周六","周日"]
 const HOURS = ["07:00","09:00","11:00","13:00","15:00","17:00","19:00","21:00"];
 const DIRECTIONS = ["艺术","专业","岗位","学科","其他"];
 
-function PageTimetable({ onBack }) {
+function PageTimetable({ onBack, user, onRequireLogin }) {
   const data = useStudySeedData();
   const [view, setView] = useStateT("week");
   const [editing, setEditing] = useStateT(null);
@@ -22,6 +22,11 @@ function PageTimetable({ onBack }) {
     setSyncing(true);
     StudySeed.syncActivePlanToSchedule();
     setTimeout(()=> setSyncing(false), 650);
+  };
+
+  const downloadTimetable = () => {
+    if (!onRequireLogin()) return;
+    StudySeedExport.downloadTimetable();
   };
 
   return (
@@ -141,9 +146,14 @@ function PageTimetable({ onBack }) {
               </div>
             </div>
           </div>
-          <button onClick={openNew} className="btn btn-ghost" style={{fontSize:13, whiteSpace:"nowrap"}}>
-            <Icon.Plus size={16}/> 手动添加事项
-          </button>
+          <div style={{display:"flex", gap:10, flexWrap:"wrap", justifyContent:"flex-end"}}>
+            <button onClick={downloadTimetable} className="btn" style={{fontSize:13, whiteSpace:"nowrap", background:"var(--paper)", color:"var(--ink)"}}>
+              下载时间表
+            </button>
+            <button onClick={openNew} className="btn btn-ghost" style={{fontSize:13, whiteSpace:"nowrap"}}>
+              <Icon.Plus size={16}/> 手动添加事项
+            </button>
+          </div>
         </div>
       </div>
 

@@ -1,11 +1,10 @@
 // Home page — black canvas, headline, envelope + fan-out cards
 const { useState: useStateH, useEffect: useEffectH, useRef: useRefH } = React;
 
-function playEnvelopeSound() {
+function playEnvelopeSound(audioRef) {
   try {
-    const audio = new Audio("uploads/tissue2.mp3");
-    audio.preload = "auto";
-    audio.volume = 0.85;
+    const audio = audioRef?.current || new Audio("uploads/tissue2.mp3");
+    audio.currentTime = 0;
     audio.play().catch(() => {});
   } catch {}
 }
@@ -14,17 +13,19 @@ function Home({ onNavigate, user, onLoginClick, onLogout }) {
   const [open, setOpen] = useStateH(false);
   const [hoverIdx, setHoverIdx] = useStateH(null);
   const prevScrollRef = useRefH(null);
+  const envelopeAudioRef = useRefH(null);
   const quoteSpace = "clamp(110px, 9vw, 156px)";
+  const openStageShift = `calc(436px - ${quoteSpace})`;
   const data = useStudySeedData();
   const stats = StudySeed.getStats(data);
 
   const toggleEnvelope = () => {
-    playEnvelopeSound();
+    playEnvelopeSound(envelopeAudioRef);
     setOpen(o => !o);
   };
 
   const openEnvelope = () => {
-    if (!open) playEnvelopeSound();
+    if (!open) playEnvelopeSound(envelopeAudioRef);
     setOpen(true);
   };
 
@@ -52,11 +53,13 @@ function Home({ onNavigate, user, onLoginClick, onLogout }) {
   }, [open]);
 
   useEffectH(() => {
+    envelopeAudioRef.current = new Audio("uploads/tissue2.mp3");
+    envelopeAudioRef.current.preload = "auto";
+    envelopeAudioRef.current.volume = 0.85;
+
     const primeEnvelopeAudio = () => {
       try {
-        const audio = new Audio("uploads/tissue2.mp3");
-        audio.preload = "auto";
-        audio.load();
+        envelopeAudioRef.current?.load();
       } catch {}
     };
     window.addEventListener("pointerdown", primeEnvelopeAudio, { once:true, passive:true });
@@ -175,11 +178,18 @@ function Home({ onNavigate, user, onLoginClick, onLogout }) {
               position:"relative",
               zIndex:2,
               display:"flex", justifyContent:"center", alignItems:"flex-start",
-              paddingTop: open ? 540 : `calc(104px + ${quoteSpace})`,
+              paddingTop:`calc(104px + ${quoteSpace})`,
               paddingBottom: 40,
-              transition:"padding-top .65s cubic-bezier(.22, 1, .36, 1)"
+              minHeight:940,
+              contain:"layout paint"
             }}>
-              <div style={{position:"relative", willChange:"transform"}}>
+              <div style={{
+                position:"relative",
+                transform: open ? `translate3d(0, ${openStageShift}, 0)` : "translate3d(0, 0, 0)",
+                transition:"transform .65s cubic-bezier(.22, 1, .36, 1)",
+                willChange:"transform",
+                backfaceVisibility:"hidden"
+              }}>
                 <Envelope open={open} onToggle={toggleEnvelope} onSealClick={openEnvelope}/>
 
                 {/* cards — anchored to envelope */}

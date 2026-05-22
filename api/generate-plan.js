@@ -1,4 +1,40 @@
 const DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions";
+const DEEPSEEK_TIMEOUT_MS = numberFromEnv("DEEPSEEK_TIMEOUT_MS", 45000);
+const DEEPSEEK_MAX_TOKENS = numberFromEnv("DEEPSEEK_MAX_TOKENS", 1800);
+const YOUTUBE_TIMEOUT_MS = numberFromEnv("YOUTUBE_TIMEOUT_MS", 2500);
+const YOUTUBE_MAX_WEEKS = numberFromEnv("YOUTUBE_MAX_WEEKS", 4);
+const YOUTUBE_RESULTS_PER_WEEK = numberFromEnv("YOUTUBE_RESULTS_PER_WEEK", 2);
+const YOUTUBE_CACHE_TTL_MS = numberFromEnv("YOUTUBE_CACHE_TTL_MS", 1000 * 60 * 60 * 6);
+const youtubeCache = new Map();
+
+function numberFromEnv(name, fallback) {
+  const value = Number(process.env[name]);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function cacheGet(cache, key, ttlMs) {
+  const hit = cache.get(key);
+  if (!hit || Date.now() - hit.time > ttlMs) return null;
+  return hit.value;
+}
+
+function cacheSet(cache, key, value) {
+  cache.set(key, { time: Date.now(), value });
+  if (cache.size > 80) {
+    const firstKey = cache.keys().next().value;
+    cache.delete(firstKey);
+  }
+}
 
 function extractJson(text) {
   const cleaned = String(text || "").replace(/```json|```/g, "").trim();
@@ -33,17 +69,35 @@ function makeBilibiliResources(query) {
   ];
 }
 
+function makeYouTubeSearchResource(query, reason = "search-fallback") {
+  const q = query || "learning tutorial";
+  return [{
+    id: `yt-search-${encodeURIComponent(q)}-${reason}`,
+    platform: "YouTube",
+    title: `YouTube search: ${q}`,
+    channel: "YouTube Search",
+    url: `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`,
+    thumb: "",
+  }];
+}
+
 async function searchYouTube(query, apiKey) {
-  if (!apiKey) return [];
+  if (!apiKey) return makeYouTubeSearchResource(query, "missing-key");
+  const cacheKey = query.toLowerCase().trim();
+  const cached = cacheGet(youtubeCache, cacheKey, YOUTUBE_CACHE_TTL_MS);
+  if (cached) return cached;
 
   const url = "https://www.googleapis.com/youtube/v3/search"
-    + `?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=2&key=${apiKey}`;
+    + `?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=${Math.max(1, Math.min(3, YOUTUBE_RESULTS_PER_WEEK))}&key=${apiKey}`;
 
   try {
-    const response = await fetch(url);
-    if (!response.ok) return [];
+    const response = await fetchWithTimeout(url, {}, YOUTUBE_TIMEOUT_MS);
+    if (!response.ok) {
+      console.warn(`YouTube search failed: ${response.status} ${response.statusText}`);
+      return makeYouTubeSearchResource(query, `api-${response.status}`);
+    }
     const data = await response.json();
-    return (data.items || []).map(item => ({
+    const videos = (data.items || []).map(item => ({
       id: item.id.videoId,
       platform: "YouTube",
       title: item.snippet.title,
@@ -51,8 +105,12 @@ async function searchYouTube(query, apiKey) {
       url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
       thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || "",
     }));
-  } catch {
-    return [];
+    const resources = videos.length ? videos : makeYouTubeSearchResource(query, "empty");
+    cacheSet(youtubeCache, cacheKey, resources);
+    return resources;
+  } catch (error) {
+    console.warn(`YouTube search unavailable: ${error.name || "Error"}`);
+    return makeYouTubeSearchResource(query, error.name === "AbortError" ? "timeout" : "network");
   }
 }
 
@@ -87,7 +145,7 @@ JSON 结构必须是：
 }
 
 要求：
-1. weeks 数量为 4 到 8 个，按从基础到实践递进。
+1. weeks 数量为 4 到 6 个，按从基础到实践递进。
 2. 每个 week 至少 2 个任务，任务要具体、可执行。
 3. 课程搜索词要适合匹配 YouTube 和 Bilibili 教程。
 4. 不要返回任何 JSON 之外的说明。
@@ -102,7 +160,7 @@ async function callDeepSeek(form) {
     throw err;
   }
 
-  const response = await fetch(DEEPSEEK_URL, {
+  const response = await fetchWithTimeout(DEEPSEEK_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -111,10 +169,10 @@ async function callDeepSeek(form) {
     body: JSON.stringify({
       model: process.env.DEEPSEEK_MODEL || "deepseek-chat",
       temperature: 0.4,
-      max_tokens: 2600,
+      max_tokens: DEEPSEEK_MAX_TOKENS,
       messages: [{ role: "user", content: buildPrompt(form) }],
     }),
-  });
+  }, DEEPSEEK_TIMEOUT_MS);
 
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
@@ -131,10 +189,13 @@ async function attachResources(outline) {
   const youtubeKey = process.env.YOUTUBE_API_KEY || "";
   const weeks = Array.isArray(outline.weeks) ? outline.weeks : [];
 
-  const enrichedWeeks = await Promise.all(weeks.map(async (week) => {
+  const enrichedWeeks = await Promise.all(weeks.map(async (week, index) => {
     const youtubeQuery = week.youtubeQuery || week.ytQuery || week.title || outline.title;
     const bilibiliQuery = week.bilibiliQuery || week.title || outline.title;
-    const youtube = await searchYouTube(`${youtubeQuery} tutorial`, youtubeKey);
+    const shouldSearchYouTube = index < Math.max(0, YOUTUBE_MAX_WEEKS);
+    const youtube = shouldSearchYouTube
+      ? await searchYouTube(`${youtubeQuery} tutorial`, youtubeKey)
+      : makeYouTubeSearchResource(`${youtubeQuery} tutorial`, "deferred");
     const bilibili = makeBilibiliResources(bilibiliQuery);
     return {
       ...week,
@@ -172,6 +233,9 @@ module.exports = async function handler(req, res) {
     return res.status(200).json(result);
   } catch (error) {
     const status = error.statusCode || 500;
-    return res.status(status).json({ error: error.message || "Failed to generate plan" });
+    const message = error.name === "AbortError"
+      ? "生成时间过长，请稍后重试或把目标写得更具体一些。"
+      : (error.message || "Failed to generate plan");
+    return res.status(status).json({ error: message });
   }
 };

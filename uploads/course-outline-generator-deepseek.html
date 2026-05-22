@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 课程大纲生成器</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', sans-serif; background: #f5f5f3; min-height: 100vh; padding: 40px 20px; color: #1a1a1a; }
+  .container { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 26px; font-weight: 600; margin-bottom: 6px; }
+  .sub { font-size: 14px; color: #666; margin-bottom: 28px; line-height: 1.6; }
+  .card { background: #fff; border-radius: 14px; border: 1px solid #e8e8e4; padding: 24px; margin-bottom: 20px; }
+  .input-row { display: flex; gap: 10px; margin-bottom: 14px; }
+  .input-row input { flex: 1; height: 44px; font-size: 15px; padding: 0 16px; border: 1px solid #ddd; border-radius: 10px; background: #fafafa; color: #1a1a1a; outline: none; transition: border 0.15s; }
+  .input-row input:focus { border-color: #999; background: #fff; }
+  .opts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
+  .opts-label { font-size: 13px; color: #888; }
+  .opt { font-size: 13px; padding: 5px 14px; border: 1px solid #ddd; border-radius: 20px; background: #fafafa; color: #666; cursor: pointer; transition: all 0.15s; }
+  .opt.on { border-color: #1a1a1a; background: #1a1a1a; color: #fff; }
+  .gen-btn { width: 100%; height: 44px; background: #1a1a1a; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; }
+  .gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .gen-btn:hover:not(:disabled) { opacity: 0.85; }
+  .api-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .api-row input { flex: 1; height: 38px; font-size: 13px; padding: 0 12px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; color: #1a1a1a; outline: none; font-family: monospace; }
+  .api-label { font-size: 12px; color: #999; margin-bottom: 6px; }
+  .result-wrap { display: none; }
+  .result-wrap.show { display: block; }
+  .result-header { background: #fff; border-radius: 14px 14px 0 0; border: 1px solid #e8e8e4; border-bottom: none; padding: 16px 20px; display: flex; align-items: center; gap: 10px; }
+  .result-title { font-size: 16px; font-weight: 600; flex: 1; }
+  .badge { font-size: 12px; padding: 3px 10px; border-radius: 20px; background: #e8f0fe; color: #1a56db; }
+  .weeks-wrap { border: 1px solid #e8e8e4; border-top: none; border-radius: 0 0 14px 14px; overflow: hidden; background: #fff; }
+  .week { border-bottom: 1px solid #f0f0ec; }
+  .week:last-child { border-bottom: none; }
+  .week-head { padding: 14px 20px; background: #fafaf8; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+  .week-num { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.06em; min-width: 36px; }
+  .week-title { font-size: 14px; font-weight: 500; flex: 1; }
+  .week-toggle { font-size: 18px; color: #bbb; transition: transform 0.2s; }
+  .week-toggle.open { transform: rotate(180deg); }
+  .week-body { padding: 16px 20px; display: none; }
+  .week-body.open { display: block; }
+  .topics { list-style: none; margin-bottom: 16px; }
+  .topics li { font-size: 13px; color: #555; padding: 4px 0; display: flex; gap: 10px; line-height: 1.5; }
+  .topics li::before { content: '—'; color: #ccc; flex-shrink: 0; }
+  .vids-label { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+  .vids-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+  .vid-card { border: 1px solid #ebebeb; border-radius: 10px; overflow: hidden; text-decoration: none; display: block; transition: border-color 0.15s; }
+  .vid-card:hover { border-color: #bbb; }
+  .vid-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: #f0f0ec; }
+  .vid-thumb-ph { width: 100%; aspect-ratio: 16/9; background: #f0f0ec; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 24px; }
+  .vid-info { padding: 8px 10px; }
+  .vid-src { font-size: 11px; color: #aaa; margin-bottom: 3px; }
+  .vid-src.yt { color: #c4302b; }
+  .vid-src.bili { color: #00a1d6; }
+  .vid-title-text { font-size: 12px; color: #333; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .outcomes-card { background: #fff; border-radius: 14px; border: 1px solid #e8e8e4; padding: 20px; margin-top: 16px; }
+  .outcomes-card h3 { font-size: 14px; font-weight: 500; margin-bottom: 12px; }
+  .outcomes-card ul { list-style: none; }
+  .outcomes-card li { font-size: 13px; color: #555; padding: 4px 0; display: flex; gap: 8px; }
+  .outcomes-card li::before { content: '✓'; color: #16a34a; flex-shrink: 0; }
+  .loading-state { text-align: center; padding: 48px; color: #999; font-size: 14px; }
+  .error-state { text-align: center; padding: 32px; color: #dc2626; font-size: 14px; background: #fff; border-radius: 14px; border: 1px solid #fecaca; }
+  .tip { font-size: 12px; color: #888; background: #fafaf8; border: 1px solid #ebebeb; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; line-height: 1.7; }
+  .tip a { color: #2563eb; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>AI 课程大纲生成器</h1>
+  <p class="sub">输入任意学习主题，AI 生成结构化学习计划并匹配 YouTube & Bilibili 精选视频</p>
+
+  <div class="card">
+    <div class="tip">
+      填入你的 DeepSeek API Key 即可运行（<a href="https://platform.deepseek.com/api_keys" target="_blank">platform.deepseek.com</a> 获取）。YouTube Key 已预填，可直接使用。
+    </div>
+    <div class="api-label">DeepSeek API Key</div>
+    <div class="api-row" style="margin-bottom:10px;">
+      <input type="password" id="dsKey" placeholder="sk-..." />
+    </div>
+    <div class="api-label">YouTube Data API Key（可选，留空则只显示 Bilibili）</div>
+    <div class="api-row">
+      <input type="text" id="ytKey" placeholder="AIza..." value="AIzaSyDyfO4yUrPkMTfw0kLp9PnhK8RP9pmkeQo" />
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="input-row">
+      <input type="text" id="topic" placeholder="例如：Python 数据分析、UI 设计基础、产品经理入门…" />
+    </div>
+    <div class="opts">
+      <span class="opts-label">学习周期：</span>
+      <button class="opt on" onclick="pick(this,'w',4)">4 周</button>
+      <button class="opt" onclick="pick(this,'w',8)">8 周</button>
+      <button class="opt" onclick="pick(this,'w',12)">12 周</button>
+      <span class="opts-label" style="margin-left:8px;">程度：</span>
+      <button class="opt on" onclick="pick(this,'l','入门')">入门</button>
+      <button class="opt" onclick="pick(this,'l','进阶')">进阶</button>
+      <button class="opt" onclick="pick(this,'l','专业')">专业</button>
+    </div>
+    <button class="gen-btn" id="genBtn" onclick="generate()">生成大纲 →</button>
+  </div>
+
+  <div id="loadingEl" style="display:none" class="loading-state">正在生成大纲并匹配视频资源，请稍候…</div>
+  <div id="errorEl" style="display:none" class="error-state"></div>
+
+  <div class="result-wrap" id="resultWrap">
+    <div class="result-header">
+      <span class="result-title" id="resultTitle"></span>
+      <span class="badge" id="resultBadge"></span>
+    </div>
+    <div class="weeks-wrap" id="weeksWrap"></div>
+    <div class="outcomes-card" id="outcomesCard" style="display:none">
+      <h3>完成后你将掌握</h3>
+      <ul id="outcomesList"></ul>
+    </div>
+  </div>
+</div>
+
+<script>
+let weeks = 4, level = '入门';
+
+function pick(btn, type, val) {
+  const labels = type === 'w' ? ['4 周','8 周','12 周'] : ['入门','进阶','专业'];
+  document.querySelectorAll('.opt').forEach(b => { if (labels.includes(b.textContent.trim())) b.classList.remove('on'); });
+  btn.classList.add('on');
+  if (type === 'w') weeks = val; else level = val;
+}
+
+function toggleWeek(i) {
+  document.getElementById('wb'+i).classList.toggle('open');
+  document.getElementById('wt'+i).classList.toggle('open');
+}
+
+async function searchYouTube(query, ytKey) {
+  try {
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=2&key=${ytKey}`;
+    const r = await fetch(url);
+    const d = await r.json();
+    return (d.items || []).map(item => ({
+      platform: 'youtube',
+      title: item.snippet.title,
+      thumb: item.snippet.thumbnails.medium.url,
+      url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+      channel: item.snippet.channelTitle
+    }));
+  } catch { return []; }
+}
+
+function bilibiliRecs(topic) {
+  const t = topic.toLowerCase();
+  const recs = {
+    python: [
+      { title: '黑马程序员 Python 教程（全套）', url: 'https://www.bilibili.com/video/BV1ex411x7Em', channel: '黑马程序员' },
+      { title: '小甲鱼 Python 零基础入门', url: 'https://www.bilibili.com/video/BV1Fs411A7HZ', channel: '小甲鱼' }
+    ],
+    ui: [
+      { title: 'UI 设计零基础入门（Figma）', url: 'https://www.bilibili.com/video/BV1of4y1Y7xX', channel: '优设网' },
+      { title: 'Figma 完整教程', url: 'https://www.bilibili.com/video/BV1mW4y1q7bj', channel: 'Design教程' }
+    ],
+    pm: [
+      { title: '产品经理入门到实战完整版', url: 'https://www.bilibili.com/video/BV1aK4y1s7Vt', channel: '起点学院' },
+      { title: '零基础产品经理学习路线', url: 'https://www.bilibili.com/video/BV1ez4y1X7FQ', channel: '人人都是产品经理' }
+    ]
+  };
+  let key = null;
+  if (t.includes('python') || t.includes('编程') || t.includes('数据')) key = 'python';
+  else if (t.includes('ui') || t.includes('设计') || t.includes('figma')) key = 'ui';
+  else if (t.includes('产品') || t.includes('pm')) key = 'pm';
+  if (key) return recs[key].map(v => ({ ...v, platform: 'bilibili', thumb: null }));
+  return [
+    { platform: 'bilibili', thumb: null, title: topic + ' 系统入门教程', url: 'https://search.bilibili.com/all?keyword=' + encodeURIComponent(topic+'入门教程'), channel: 'Bilibili 搜索' },
+    { platform: 'bilibili', thumb: null, title: topic + ' 从零开始学', url: 'https://search.bilibili.com/all?keyword=' + encodeURIComponent(topic+'零基础'), channel: 'Bilibili 搜索' }
+  ];
+}
+
+function renderVid(v) {
+  const src = v.platform === 'youtube'
+    ? '<span class="vid-src yt">▶ YouTube · ' + v.channel + '</span>'
+    : '<span class="vid-src bili">▶ Bilibili · ' + v.channel + '</span>';
+  const thumb = v.thumb
+    ? '<img class="vid-thumb" src="' + v.thumb + '" alt="" loading="lazy" />'
+    : '<div class="vid-thumb-ph">▶</div>';
+  return '<a class="vid-card" href="' + v.url + '" target="_blank" rel="noopener">' + thumb + '<div class="vid-info">' + src + '<div class="vid-title-text">' + v.title + '</div></div></a>';
+}
+
+async function generate() {
+  const topic = document.getElementById('topic').value.trim();
+  const dsKey = document.getElementById('dsKey').value.trim();
+  const ytKey = document.getElementById('ytKey').value.trim();
+
+  if (!topic) { document.getElementById('topic').focus(); return; }
+  if (!dsKey) { alert('请填入 DeepSeek API Key'); return; }
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true; btn.textContent = '生成中…';
+  document.getElementById('loadingEl').style.display = 'block';
+  document.getElementById('errorEl').style.display = 'none';
+  document.getElementById('resultWrap').classList.remove('show');
+
+  const prompt = '你是专业学习规划师。为主题"' + topic + '"生成' + weeks + '周' + level + '课程大纲。\n只返回 JSON，不加任何说明或代码块：\n{"title":"课程标题","weeks":[{"title":"本周主题","topics":["知识点1","知识点2","知识点3"],"ytQuery":"英文YouTube搜索词5词以内"}],"outcomes":["成果1","成果2","成果3"]}\n要求：weeks 恰好' + weeks + '个，循序渐进，ytQuery 用英文且精准。';
+
+  try {
+    const aiRes = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + dsKey },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!aiRes.ok) {
+      const errData = await aiRes.json().catch(() => ({}));
+      throw new Error(errData.error?.message || 'API 错误 ' + aiRes.status);
+    }
+
+    const aiData = await aiRes.json();
+    const raw = (aiData.choices?.[0]?.message?.content || '').replace(/```json|```/g, '').trim();
+    const outline = JSON.parse(raw);
+
+    document.getElementById('resultTitle').textContent = outline.title;
+    document.getElementById('resultBadge').textContent = level + ' · ' + weeks + ' 周';
+
+    const biliVids = bilibiliRecs(topic);
+    let weeksHtml = '';
+    outline.weeks.forEach(function(w, i) {
+      weeksHtml += '<div class="week"><div class="week-head" onclick="toggleWeek(' + i + ')"><span class="week-num">第 ' + (i+1) + ' 周</span><span class="week-title">' + w.title + '</span><span class="week-toggle' + (i===0?' open':'') + '" id="wt' + i + '">⌄</span></div><div class="week-body' + (i===0?' open':'') + '" id="wb' + i + '"><ul class="topics">' + (w.topics||[]).map(function(t){ return '<li>'+t+'</li>'; }).join('') + '</ul><div class="vids-label">推荐视频</div><div class="vids-grid" id="vids' + i + '"><div style="font-size:13px;color:#aaa;padding:8px 0;">加载中…</div></div></div></div>';
+    });
+    document.getElementById('weeksWrap').innerHTML = weeksHtml;
+
+    if (outline.outcomes && outline.outcomes.length) {
+      document.getElementById('outcomesCard').style.display = 'block';
+      document.getElementById('outcomesList').innerHTML = outline.outcomes.map(function(o){ return '<li>'+o+'</li>'; }).join('');
+    }
+
+    document.getElementById('resultWrap').classList.add('show');
+    document.getElementById('loadingEl').style.display = 'none';
+
+    outline.weeks.forEach(async function(w, i) {
+      const el = document.getElementById('vids' + i);
+      if (!el) return;
+      try {
+        const ytVids = ytKey ? await searchYouTube((w.ytQuery || topic) + ' tutorial', ytKey) : [];
+        const bili = biliVids[i % biliVids.length];
+        const all = ytVids.concat([bili]).filter(Boolean).slice(0, 3);
+        el.innerHTML = all.length ? all.map(renderVid).join('') : '<div style="font-size:13px;color:#aaa;">暂无匹配视频</div>';
+      } catch(e) { el.innerHTML = '<div style="font-size:13px;color:#aaa;">视频加载失败</div>'; }
+    });
+
+  } catch(err) {
+    document.getElementById('loadingEl').style.display = 'none';
+    document.getElementById('errorEl').style.display = 'block';
+    document.getElementById('errorEl').textContent = '生成失败：' + err.message;
+  } finally {
+    btn.disabled = false; btn.textContent = '生成大纲 →';
+  }
+}
+
+document.getElementById('topic').addEventListener('keydown', function(e) { if (e.key === 'Enter') generate(); });
+</script>
+</body>
+</html>

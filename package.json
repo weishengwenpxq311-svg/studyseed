@@ -1,0 +1,12 @@
+{
+  "name": "studyseed",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "check": "node --check api/generate-plan.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -144,7 +144,7 @@ function LoginModal({ onClose, onLogin }) {
       background:"rgba(0,0,0,.68)", display:"flex", alignItems:"center", justifyContent:"center",
       padding:24
     }}>
-      <form onSubmit={submit} className="paper-tex" style={{
+      <form onSubmit={submit} className="paper-tex modal-panel" style={{
         width:"min(460px, 100%)", background:"var(--paper)", color:"var(--ink)",
         borderRadius:24, padding:"30px 32px", boxShadow:"0 34px 80px -28px rgba(0,0,0,.85)"
       }}>

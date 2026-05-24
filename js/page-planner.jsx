@@ -59,9 +59,9 @@ function PagePlanner({ onBack, onGenerated, user, onRequireLogin }) {
     <div className="page-shell scrollable" style={{background:"var(--ink)", color:"var(--paper)"}}>
       <SubHeader onBack={onBack} idx="01" label="ARRANGE A PLAN" zh="安排计划" accent="var(--green)"/>
 
-      <div style={{padding:"24px 56px 80px", maxWidth:1240, margin:"0 auto", width:"100%"}}>
-        <div style={{display:"grid", gridTemplateColumns:"1.1fr .9fr", gap:48}}>
-          <div className="paper-tex" style={{
+      <div className="page-content" style={{padding:"24px 56px 80px", maxWidth:1240, margin:"0 auto", width:"100%"}}>
+        <div className="planner-grid" style={{display:"grid", gridTemplateColumns:"1.1fr .9fr", gap:48}}>
+          <div className="paper-tex responsive-card" style={{
             background:"var(--paper)", color:"var(--ink)",
             borderRadius:28, padding:"40px 44px", position:"relative",
             boxShadow:"0 40px 80px -30px rgba(0,0,0,.6)"
@@ -85,7 +85,7 @@ function PagePlanner({ onBack, onGenerated, user, onRequireLogin }) {
                 <input className="field-input" value={goal} onChange={e=>setGoal(e.target.value)} placeholder="例如：完善作品集 / 准备岗位面试 / 完成专业项目"/>
               </div>
 
-              <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:18}}>
+              <div className="field-grid" style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:18}}>
                 <div>
                   <label className="field-label">截止日期</label>
                   <input className="field-input" type="date" value={date} onChange={e=>setDate(e.target.value)}/>
@@ -125,7 +125,7 @@ function PagePlanner({ onBack, onGenerated, user, onRequireLogin }) {
                 </div>
               )}
 
-              <div style={{display:"flex", alignItems:"center", gap:16, marginTop:4}}>
+              <div className="form-actions" style={{display:"flex", alignItems:"center", gap:16, marginTop:4}}>
                 <button onClick={submit} disabled={generating} className="btn btn-primary" style={{padding:"16px 28px", fontSize:15, opacity:generating ? .7 : 1}}>
                   {generating ? "正在生成计划与课程..." : "生成学习计划"}
                   {!generating && <Icon.ArrowRight size={18}/>}
@@ -190,14 +190,14 @@ function PagePlanner({ onBack, onGenerated, user, onRequireLogin }) {
 
 function SubHeader({ onBack, idx, label, zh, accent }) {
   return (
-    <header style={{
+    <header className="sub-header" style={{
       padding:"28px 56px", display:"flex", alignItems:"center", justifyContent:"space-between",
       borderBottom:"1px solid var(--hairline)"
     }}>
       <button onClick={onBack} className="btn btn-ghost" style={{padding:"10px 16px"}}>
         <Icon.ArrowLeft size={16}/> 回到信封
       </button>
-      <div style={{display:"flex", alignItems:"center", gap:16}}>
+      <div className="sub-header-title" style={{display:"flex", alignItems:"center", gap:16}}>
         <span className="tag-text" style={{color:"rgba(241,236,224,.5)"}}>{idx} · {label}</span>
         <span style={{width:6,height:6,borderRadius:"50%",background:accent}}/>
         <span style={{fontFamily:"var(--type-cn-serif)", fontWeight:900, fontSize:18}}>{zh}</span>

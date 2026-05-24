@@ -24,15 +24,15 @@ function PageRecords({ onBack }) {
     <div className="page-shell scrollable" style={{background:"var(--ink)", color:"var(--paper)"}}>
       <SubHeader onBack={onBack} idx="02" label="STUDY RECORDS" zh="学习记录" accent="var(--paper)"/>
 
-      <div style={{padding:"28px 56px 80px", maxWidth:1320, margin:"0 auto", width:"100%"}}>
-        <div style={{display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:16, marginBottom:32}}>
+      <div className="page-content" style={{padding:"28px 56px 80px", maxWidth:1320, margin:"0 auto", width:"100%"}}>
+        <div className="stats-grid" style={{display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:16, marginBottom:32}}>
           <StatTile big={String(stats.streak)} unit="天" sub="连续学习" tone="green"/>
           <StatTile big={String(stats.monthHours)} unit="h" sub="本月累计" tone="paper"/>
           <StatTile big={`${stats.completedCount} / ${stats.recordCount}`} unit="" sub="完成记录" tone="yellow"/>
           <StatTile big={String(stats.activeDirections)} unit="方向" sub="正在跟进" tone="ghost"/>
         </div>
 
-        <div style={{display:"grid", gridTemplateColumns:"1.05fr .95fr", gap:32}}>
+        <div className="records-grid" style={{display:"grid", gridTemplateColumns:"1.05fr .95fr", gap:32}}>
           <div>
             <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18, gap:16, flexWrap:"wrap"}}>
               <h2 style={{margin:0, fontSize:30, fontWeight:900, letterSpacing:".01em"}}>
@@ -58,7 +58,7 @@ function PageRecords({ onBack }) {
                 {filtered.map(r => {
                   const active = selected && selected.id === r.id;
                   return (
-                    <button key={r.id} onClick={()=>setSelected(r)} style={{
+                    <button key={r.id} className="record-item" onClick={()=>setSelected(r)} style={{
                       textAlign:"left", padding:"18px 22px", borderRadius:18,
                       background: active ? "var(--paper)" : "rgba(241,236,224,.04)",
                       color: active ? "var(--ink)" : "var(--paper)",
@@ -112,7 +112,7 @@ function EmptyRecordState() {
 function RecordDetail({ selected }) {
   if (!selected) {
     return (
-      <div className="paper-tex" style={{
+      <div className="paper-tex record-detail" style={{
         background:"var(--paper)", color:"var(--ink)",
         borderRadius:24, padding:"30px 30px", height:"fit-content"
       }}>
@@ -124,7 +124,7 @@ function RecordDetail({ selected }) {
   }
 
   return (
-    <div className="paper-tex" style={{
+    <div className="paper-tex record-detail" style={{
       background:"var(--paper)", color:"var(--ink)",
       borderRadius:24, padding:"30px 30px", position:"sticky", top:24, height:"fit-content",
       boxShadow:"0 30px 60px -24px rgba(0,0,0,.5)"
@@ -175,7 +175,7 @@ function RecordDetail({ selected }) {
 
       <div style={{height:1, background:"rgba(5,5,5,.1)", margin:"22px 0"}}/>
 
-      <div style={{display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:14}}>
+      <div className="detail-mini-grid" style={{display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gap:14}}>
         <DetailMini label="时长" value={selected.dur}/>
         <DetailMini label="状态" value={selected.status}/>
         <DetailMini label="方向" value={selected.tag}/>
@@ -192,11 +192,11 @@ function StatTile({ big, unit, sub, tone }) {
     ghost:  { bg:"transparent",   fg:"var(--paper)",  sub:"rgba(241,236,224,.55)", border:"1px solid var(--hairline)" },
   }[tone];
   return (
-    <div className={tone==="paper" ? "paper-tex" : ""} style={{
+    <div className={(tone==="paper" ? "paper-tex " : "") + "stat-tile"} style={{
       background:tones.bg, color:tones.fg, borderRadius:18, padding:"22px 22px",
       border: tones.border || "none"
     }}>
-      <div style={{fontFamily:"var(--type-en)", fontWeight:700, fontSize:40, letterSpacing:".01em", lineHeight:1}}>
+      <div className="stat-tile-value" style={{fontFamily:"var(--type-en)", fontWeight:700, fontSize:40, letterSpacing:".01em", lineHeight:1}}>
         {big}<span style={{fontSize:18, marginLeft:6, fontWeight:500}}>{unit}</span>
       </div>
       <div style={{fontSize:13, color:tones.sub, marginTop:8}}>{sub}</div>

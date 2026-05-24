@@ -33,8 +33,8 @@ function PageTimetable({ onBack, user, onRequireLogin }) {
     <div className="page-shell scrollable" style={{background:"var(--ink)", color:"var(--paper)"}}>
       <SubHeader onBack={onBack} idx="03" label="WEEKLY SCHEDULE" zh="计划时间表" accent="var(--yellow)"/>
 
-      <div style={{padding:"28px 56px 80px", maxWidth:1360, margin:"0 auto", width:"100%"}}>
-        <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:24, gap:24, flexWrap:"wrap"}}>
+      <div className="page-content" style={{padding:"28px 56px 80px", maxWidth:1360, margin:"0 auto", width:"100%"}}>
+        <div className="timetable-head" style={{display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:24, gap:24, flexWrap:"wrap"}}>
           <div>
             <div className="tag-text" style={{color:"rgba(241,236,224,.5)"}}>
               {activePlan ? `ACTIVE PLAN · ${activePlan.title}` : "NO ACTIVE PLAN · 先生成一份计划"}
@@ -44,7 +44,7 @@ function PageTimetable({ onBack, user, onRequireLogin }) {
             </h2>
           </div>
 
-          <div style={{display:"flex", gap:10, alignItems:"center"}}>
+          <div className="timetable-actions" style={{display:"flex", gap:10, alignItems:"center"}}>
             <div style={{display:"flex", background:"rgba(241,236,224,.06)", borderRadius:999, padding:4, border:"1px solid var(--hairline)"}}>
               {["day","week"].map(v => (
                 <button key={v} onClick={()=>setView(v)} style={{
@@ -76,7 +76,7 @@ function PageTimetable({ onBack, user, onRequireLogin }) {
           ))}
         </div>
 
-        <div style={{
+        <div className="timetable-board" style={{
           border:"1px solid var(--hairline)",
           borderRadius:24, overflow:"hidden",
           background:"var(--ink-2)"
@@ -130,7 +130,7 @@ function PageTimetable({ onBack, user, onRequireLogin }) {
           ))}
         </div>
 
-        <div style={{
+        <div className="timetable-note" style={{
           marginTop:22, display:"flex", justifyContent:"space-between", alignItems:"center",
           padding:"18px 22px", borderRadius:18,
           border:"1px dashed var(--hairline-strong)", background:"rgba(241,236,224,.02)", gap:16
@@ -146,7 +146,7 @@ function PageTimetable({ onBack, user, onRequireLogin }) {
               </div>
             </div>
           </div>
-          <div style={{display:"flex", gap:10, flexWrap:"wrap", justifyContent:"flex-end"}}>
+          <div className="timetable-note-actions" style={{display:"flex", gap:10, flexWrap:"wrap", justifyContent:"flex-end"}}>
             <button onClick={downloadTimetable} className="btn" style={{fontSize:13, whiteSpace:"nowrap", background:"var(--paper)", color:"var(--ink)"}}>
               下载时间表
             </button>
@@ -228,7 +228,7 @@ function EventEditor({ event, onClose }) {
       background:"rgba(0,0,0,.62)", display:"flex", alignItems:"center", justifyContent:"center",
       padding:24
     }}>
-      <div className="paper-tex" style={{
+      <div className="paper-tex modal-panel" style={{
         width:"min(560px, 100%)", background:"var(--paper)", color:"var(--ink)",
         borderRadius:24, padding:"28px 30px", boxShadow:"0 34px 80px -28px rgba(0,0,0,.8)"
       }}>
@@ -241,7 +241,7 @@ function EventEditor({ event, onClose }) {
             <input className="field-input" value={draft.t} onChange={e=>set("t", e.target.value)}/>
           </div>
 
-          <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:14}}>
+          <div className="editor-grid" style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:14}}>
             <div>
               <label className="field-label">方向</label>
               <select className="field-input" value={draft.sub} onChange={e=>set("sub", e.target.value)}>
@@ -258,7 +258,7 @@ function EventEditor({ event, onClose }) {
             </div>
           </div>
 
-          <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:14}}>
+          <div className="editor-grid" style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:14}}>
             <div>
               <label className="field-label">星期</label>
               <select className="field-input" value={draft.d} onChange={e=>set("d", Number(e.target.value))}>

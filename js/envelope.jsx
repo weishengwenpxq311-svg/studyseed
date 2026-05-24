@@ -1,12 +1,23 @@
 // Envelope — horizontal paper envelope with click-to-open flap animation.
 // Props: open (bool), onToggle (fn), compact (bool, for sub-page header)
-const { useState } = React;
+const { useState: useStateEnvelope, useEffect: useEffectEnvelope } = React;
 
 function Envelope({ open, onToggle, onSealClick, compact=false }) {
-  const W = compact ? 280 : 720;       // envelope width
-  const H = compact ? 158 : 405;       // envelope height (≈16:9)
+  const [viewportWidth, setViewportWidth] = useStateEnvelope(
+    typeof window === "undefined" ? 1200 : window.innerWidth
+  );
+
+  useEffectEnvelope(() => {
+    const update = () => setViewportWidth(window.innerWidth);
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  const phone = !compact && viewportWidth <= 760;
+  const W = compact ? 280 : (phone ? Math.max(300, Math.min(340, viewportWidth - 32)) : 720);
+  const H = compact ? 158 : Math.round(W * 0.5625);
   const FLAP_H = H * 0.46;             // height of triangular flap
-  const FOLD_OFFSET = compact ? 8 : 18; // how far below top the side-walls start (creates V)
+  const FOLD_OFFSET = compact ? 8 : (phone ? 10 : 18); // how far below top the side-walls start (creates V)
 
   return (
     <div className="envelope-wrap" style={{
@@ -63,7 +74,7 @@ function Envelope({ open, onToggle, onSealClick, compact=false }) {
         {/* seal / smiley + caption visible when closed — also acts as a button to trigger the swipe-carousel mode */}
         {!compact && (
           <div style={{
-            position:"absolute", left:"50%", bottom:"22%", transform:"translateX(-50%)",
+            position:"absolute", left:"50%", bottom:"22%",
             display:"flex", flexDirection:"column", alignItems:"center", gap:14,
             opacity: open ? 0 : 1,
             transform: `translateX(-50%) scale(${open ? 0.86 : 1})`,

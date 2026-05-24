@@ -1,13 +1,20 @@
 // Three fan-out function cards that emerge from the envelope when opened.
 
 function FunctionCard({ idx, open, hoveredIdx, onHover, onClick, variant }) {
+  const compact = typeof window !== "undefined" && window.innerWidth <= 760;
   // closed state: cards stacked tightly inside envelope, invisible
   // open state: fan out — left tilt, center high, right tilt
-  const layouts = [
-    { x: -260, y: -360, rot: -9,  delay: 0.04 },
-    { x:    0, y: -440, rot:  0,  delay: 0.12 },
-    { x:  260, y: -360, rot:  9,  delay: 0.20 },
-  ];
+  const layouts = compact
+    ? [
+        { x: 0, y: -660, rot: -2, delay: 0.04 },
+        { x: 0, y: -420, rot:  1, delay: 0.12 },
+        { x: 0, y: -180, rot: -1, delay: 0.20 },
+      ]
+    : [
+        { x: -260, y: -360, rot: -9,  delay: 0.04 },
+        { x:    0, y: -440, rot:  0,  delay: 0.12 },
+        { x:  260, y: -360, rot:  9,  delay: 0.20 },
+      ];
   const L = layouts[idx];
 
   const variants = {
@@ -29,6 +36,8 @@ function FunctionCard({ idx, open, hoveredIdx, onHover, onClick, variant }) {
     : isDimmed
       ? `translate(-50%, 0) translate(${L.x * 1.05}px, ${L.y + 14}px) rotate(${L.rot}deg) scale(.97)`
       : baseTransform;
+  const cardWidth = compact ? Math.min(310, Math.max(288, window.innerWidth - 48)) : 300;
+  const cardHeight = compact ? 210 : 380;
 
   return (
     <button
@@ -39,8 +48,8 @@ function FunctionCard({ idx, open, hoveredIdx, onHover, onClick, variant }) {
       className={variant === "paper" ? "paper-tex" : ""}
       style={{
         position:"absolute", left:"50%", bottom:"30%",
-        width:300, height:380,
-        borderRadius:24,
+        width:cardWidth, height:cardHeight,
+        borderRadius:compact ? 20 : 24,
         background:v.bg, color:v.fg,
         transform: open ? hoverTransform : baseTransform,
         opacity: open ? 1 : 0,
@@ -51,7 +60,7 @@ function FunctionCard({ idx, open, hoveredIdx, onHover, onClick, variant }) {
           : "0 30px 60px -22px rgba(0,0,0,.6), 0 6px 12px -6px rgba(0,0,0,.4)",
         zIndex: isHover ? 30 : (10 + idx),
         textAlign:"left",
-        padding:"26px 26px 22px",
+        padding:compact ? "20px 22px 18px" : "26px 26px 22px",
         display:"flex", flexDirection:"column",
         cursor:"pointer",
         border: variant === "paper" ? "1px solid rgba(0,0,0,.06)" : "none",

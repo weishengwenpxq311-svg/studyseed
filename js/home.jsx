@@ -74,7 +74,7 @@ function Home({ onNavigate, user, onLoginClick, onLogout }) {
           background:"radial-gradient(80% 60% at 50% 0%, rgba(241,236,224,.04), transparent 60%)"
         }}/>
 
-        <div style={{
+        <div className="home-layout" style={{
           maxWidth:1320, margin:"0 auto", padding:"28px 56px 80px",
           display:"grid", gridTemplateColumns:"minmax(360px, 1fr) minmax(720px, 1.4fr)", gap:48, alignItems:"start"
         }}>
@@ -82,7 +82,7 @@ function Home({ onNavigate, user, onLoginClick, onLogout }) {
           <div className="home-copy-enter" style={{paddingTop:32}}>
             <div className="fade-in d1 eyebrow">PLAN · TRACK · GROW</div>
 
-            <h1 className="fade-in d2" style={{
+            <h1 className="fade-in d2 home-title" style={{
               margin:"22px 0 0",
               fontFamily:"var(--type-cn-display)",
               fontWeight:900,
@@ -104,7 +104,7 @@ function Home({ onNavigate, user, onLoginClick, onLogout }) {
               <span style={{color:"var(--green)"}}>会展开的信</span>
             </h1>
 
-            <p className="fade-in d3" style={{
+            <p className="fade-in d3 home-lead" style={{
               margin:"26px 0 0", maxWidth:440,
               fontSize:16, lineHeight:1.75, color:"rgba(241,236,224,.7)"
             }}>
@@ -119,7 +119,7 @@ function Home({ onNavigate, user, onLoginClick, onLogout }) {
               </button>
             </div>
 
-            <div className="fade-in d4" style={{marginTop:48, display:"flex", gap:32, flexWrap:"wrap"}}>
+            <div className="fade-in d4 home-stats" style={{marginTop:48, display:"flex", gap:32, flexWrap:"wrap"}}>
               <MetaStat k={String(stats.streak)} u="天" l="连续学习"/>
               <MetaStat k={String(stats.monthHours)} u="h" l="本月累计"/>
               <MetaStat k={String(stats.activeDirections)} u="方向" l="正在跟进"/>
@@ -129,7 +129,7 @@ function Home({ onNavigate, user, onLoginClick, onLogout }) {
           {/* RIGHT — stage */}
           <div className="home-stage-enter" style={{position:"relative"}}>
             {/* decorative brand quote — sits above the envelope */}
-            <div style={{
+            <div className="home-quote" style={{
               paddingTop:2,
               position:"absolute",
               top:0,
@@ -171,7 +171,7 @@ function Home({ onNavigate, user, onLoginClick, onLogout }) {
               </p>
             </div>
 
-            <div id="envelope-anchor" className="stage" style={{
+            <div id="envelope-anchor" className={`stage home-envelope-stage ${open ? "is-open" : ""}`} style={{
               position:"relative",
               zIndex:2,
               display:"flex", justifyContent:"center", alignItems:"flex-start",
@@ -191,7 +191,7 @@ function Home({ onNavigate, user, onLoginClick, onLogout }) {
 
             {/* hint pill below envelope when closed */}
             {!open && (
-              <div style={{
+              <div className="home-hint-pill" style={{
                 position:"absolute", left:"50%", transform:"translateX(-50%)", bottom:-6,
                 padding:"10px 18px", borderRadius:999, border:"1px solid var(--hairline-strong)",
                 fontSize:12, color:"rgba(241,236,224,.6)", display:"flex", alignItems:"center", gap:10
@@ -363,7 +363,7 @@ function TopBar({ onNavigate, user, onLoginClick, onLogout }) {
   ];
 
   return (
-    <header className="fade-in d1" style={{
+    <header className="fade-in d1 top-bar" style={{
       padding:"22px 56px",
       display:"flex", justifyContent:"space-between", alignItems:"center",
       borderBottom:"1px solid var(--hairline)"
@@ -385,7 +385,7 @@ function TopBar({ onNavigate, user, onLoginClick, onLogout }) {
         </div>
       </div>
 
-      <nav style={{display:"flex", alignItems:"center", gap:18, fontSize:14}}>
+      <nav className="top-nav" style={{display:"flex", alignItems:"center", gap:18, fontSize:14}}>
         <LimelightNav items={navItems}/>
         <button className="btn btn-paper" onClick={()=>onNavigate("planner")} style={{padding:"10px 18px", fontSize:13}}>
           开始使用 <Icon.ArrowRight size={14}/>
@@ -408,12 +408,12 @@ function MetaStat({k,u,l}) {
 
 function FootStrip() {
   return (
-    <div style={{
+    <div className="foot-strip" style={{
       borderTop:"1px solid var(--hairline)", marginTop:40,
       padding:"22px 56px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:18
     }}>
       <div className="tag-text" style={{color:"rgba(241,236,224,.4)"}}>NO.001 · STUDYSEED · 2026</div>
-      <div style={{display:"flex", gap:24, fontSize:12, color:"rgba(241,236,224,.5)"}}>
+      <div className="foot-strip-palette" style={{display:"flex", gap:24, fontSize:12, color:"rgba(241,236,224,.5)"}}>
         <span>麻纸米白 #F1ECE0</span>
         <span style={{color:"var(--green)"}}>草木深绿 #117C0D</span>
         <span style={{color:"var(--yellow)"}}>麦秆暖黄 #FAC75E</span>
